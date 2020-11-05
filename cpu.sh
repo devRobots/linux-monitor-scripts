@@ -1,28 +1,55 @@
 #!/bin/bash
+#title: cpu.sh 
+#description: Este script monitorizara el uso de la CPU. 
+#author: Yesid Shair Rosas Toro
+#author: Luisa Fernanda Cotte Sanchez
+#author: Cristian Camilo Quiceno Laurente
+#version: 1.1  
 
-cpus_info=$(cat /proc/stat | grep ^cpu | head -1 | cut -d" " -f3-)
-idle_info=$(echo $cpus_info | cut -d" " -f3)
-proceso=$(ps -Ao comm --sort=-pcpu | tail +2 | head -1)
+# Obtiene todos los campos de informacion sobre uso de la CPU
+CPUS_INFO=$(cat /proc/stat | grep ^cpu | head -1 | cut -d" " -f3-)
 
-sum=0
-for data in $cpus_info
+# Obtiene el campo de informacion sobre uso de la CPU en IDLE
+IDLE_INFO=$(echo $CPUS_INFO | cut -d" " -f3)
+
+# Obtiene el nombre del proceso de mayor consumo de CPU
+PROCESO=$(ps -Ao comm --sort=-pcpu | tail +2 | head -1)
+
+# Calculo del porcentaje de uso de la CPU
+SUM=0
+for DATA in $CPUS_INFO
 do
-	sum=$(($sum+$data))
+	# Realiza la sumatoria de todos los campos de informacion de la CPU
+	SUM=$(($SUM+$DATA))
 done
-average=$(echo "scale=2; ($idle_info*100)/$sum" | bc)
+# El porcentaje de uso de la CPU se calcula: (idle_info*100)/SUM(cpu_info)
+CPU_AVG=$(echo "scale=2; ($IDLE_INFO*100)/$SUM" | bc)
 
-if [ $(echo "$average >= 80.00" | bc -l) -eq "1" ]
+# Verifica si el uso de la CPU es excesivo
+if [ $(echo "$CPU_AVG >= 80.00" | bc -l) -eq "1" ]
 then
-	notify-send "El uso de CPU es excesivo: $average%\nPID proceso de mayor consumo: $proceso" -u critical
+	# Construye el mensaje que se enviara como notificacion
+	MENSAJE_NOTIFICACION="El uso de CPU es excesivo: $CPU_AVG%
+	PID PROCESO de mayor consumo: $PROCESO"
+
+	# Envia un mensaje de notificacion persistente
+	notify-send MENSAJE_NOTIFICACION -u critical
 fi
 
-log_file=cpu.log
-if [ ! -e log_file ]
+# Verifica que exista el archivo LOG
+LOG_FILE=cpu.log
+if [ ! -e LOG_FILE ]
 then
-	touch $log_file
+	# Si el archivo no existe entonces lo crea
+	touch $LOG_FILE
 fi
 
-fecha=$(date | cut -d" " -f2,4,5)
-mensaje="Fecha: $fecha; Uso del CPU: $average%; Proceso de mayor consumo: $proceso"
-echo $mensaje >> $log_file
+# Obtiene la hora actual para el log
+FECHA=$(date | cut -d" " -f2,4,5)
+
+# Construye el mensaje que se agregara al LOG
+MENSAJE="Fecha: $FECHA; Uso del CPU: $CPU_AVG%; Proceso de mayor consumo: $PROCESO"
+
+# Concatena el mensaje en el archivo LOG
+echo $MENSAJE >> $LOG_FILE
 
