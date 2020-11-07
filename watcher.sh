@@ -18,7 +18,7 @@ function monitorear()
     
     while :
     do
-    #creación,borrado, lectura y escritura
+        #creación,borrado, lectura y escritura
         EVENTO=0
         NUEVO_STAT=$(stat $1 2>&1| head -1)
         NUEVO_ACCESO=$(stat $1 2>/dev/null | tail -4 | head -1)
@@ -28,22 +28,24 @@ function monitorear()
         then
             if [ 0 -ne $(echo $NUEVO_STAT  | grep ^stat | wc -l ) ]
             then
-                EVENTO=1
-            else
                 EVENTO=2
+            else
+                EVENTO=1
             fi
             STAT=$NUEVO_STAT
+            ACCESO=$NUEVO_ACCESO
+            MODIFICACION=$NUEVO_MODIFICACION
         else
             if [ "$NUEVO_ACCESO" != "$ACCESO" ]
             then
                 ACCESO=$NUEVO_ACCESO
-                EVENTO=3           #Crear archivo.log
+                EVENTO=3
             fi
 
             if [ "$NUEVO_MODIFICACION" != "$MODIFICACION" ]
             then
                 MODIFICACION=$NUEVO_MODIFICACION
-                EVENTO=4            #Crear archivo.log
+                EVENTO=4
             fi
         fi
 
@@ -61,7 +63,7 @@ function monitorear()
 
             case $EVENTO in
                 1) MENSAJE="Se creo el archivo $1";; #creación
-                2) MENSAJE="Se Borro el archivo $1";; #Borrado
+                2) MENSAJE="Se borro el archivo $1";; #Borrado
                 3) MENSAJE="Se leyo el archivo $1";; #Lectura
                 4) MENSAJE="Se escribio el archivo $1";; #escritura
             esac
@@ -72,7 +74,7 @@ function monitorear()
             echo $FECHA $MENSAJE >> $LOG_FILE
         fi
 
-        sleep 5
+        sleep 2
     done
 }
 
