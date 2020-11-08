@@ -27,12 +27,12 @@ EVENTO=0
 
 if [ $(echo "$MEM_PORC >= 75.00 && $MEM_PORC <= 100.00" | bc -l) -eq "1" ] 
 then
-    notify-send "$MSG" -u critical
+    notify-send "$MSG" --icon=messagebox_critical -u critical
     EVENTO=1
 else
     if [ $(echo "$MEM_PORC >= 50.00 && $MEM_PORC < 75.00" | bc -l) -eq "1" ]
     then
-        notify-send "$MSG" -u critical
+        notify-send "$MSG" --icon=messagebox_warning -u critical
         EVENTO=2
     fi
 fi
