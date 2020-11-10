@@ -9,8 +9,8 @@
 # Obtiene todos los campos de informacion sobre uso de la CPU
 CPUS_INFO=$(cat /proc/stat | grep ^cpu | head -1 | cut -d" " -f3-)
 
-# Obtiene el campo de informacion sobre uso de la CPU en IDLE
-IDLE_INFO=$(echo $CPUS_INFO | cut -d" " -f3)
+# Obtiene el campo de informacion sobre uso de la CPU del usuario
+USER_INFO=$(echo $CPUS_INFO | cut -d" " -f1)
 
 # Obtiene el nombre del proceso de mayor consumo de CPU
 PROCESO=$(ps -Ao comm --sort=-pcpu | tail +2 | head -1)
@@ -22,8 +22,8 @@ do
 	# Realiza la sumatoria de todos los campos de informacion de la CPU
 	SUM=$(($SUM+$DATA))
 done
-# El porcentaje de uso de la CPU se calcula: (idle_info*100)/SUM(cpu_info)
-CPU_AVG=$(echo "scale=2; ($IDLE_INFO*100)/$SUM" | bc)
+# El porcentaje de uso de la CPU se calcula: (user_info*100)/SUM(cpu_info)
+CPU_AVG=$(echo "scale=2; ($USER_INFO*100)/$SUM" | bc)
 
 # Verifica si el uso de la CPU es excesivo
 if [ $(echo "$CPU_AVG >= 80.00" | bc -l) -eq "1" ]
